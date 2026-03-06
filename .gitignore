@@ -1,0 +1,34 @@
+# Dependencies - 可通过 npm install 重新安装，约 639 MB
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+release/
+out/
+*.local
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Logs & caches
+*.log
+npm-debug.log*
+.npm
+.cache
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE (可选：如需共享编辑配置可移除 .vscode 行)
+.idea/
+*.swp
+*.swo
+
+# Electron
+*.asar
