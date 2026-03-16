@@ -21,6 +21,11 @@ export function registerWindowIpc(win: BrowserWindow): void {
     if (existsSync(filePath)) await shell.openPath(filePath)
   })
 
+  ipcMain.handle("open-external", async (_, url: string) => {
+    if (url && (url.startsWith("https:") || url.startsWith("http:")))
+      await shell.openExternal(url)
+  })
+
   ipcMain.handle(
     "show-open-dialog",
     async (

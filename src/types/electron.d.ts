@@ -27,6 +27,7 @@ declare global {
 
       // File system
       openPath: (filePath: string) => Promise<void>
+      openExternal: (url: string) => Promise<void>
       showOpenDialog: (options: {
         filters?: { name: string; extensions: string[] }[]
         multiple?: boolean

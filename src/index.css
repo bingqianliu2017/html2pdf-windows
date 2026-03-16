@@ -1,8 +1,18 @@
+/* -------------------------------------------------------------------------
+   Responsive root: small window readable (min 12px), large window up to 16px.
+   At 840px width ≈ 12.2px, at 960px ≈ 12.8px, at 1920px = 16px.
+   ------------------------------------------------------------------------- */
+html {
+  font-size: clamp(12px, 0.5vw + 8px, 16px);
+}
+
 :root {
+  /* Colors */
   --bg-deep: #0f1419;
   --bg-card: #1a2332;
   --bg-header: #161d26;
   --bg-hover: #243044;
+  --bg-primary: #0f1419;
   --accent: #3b82f6;
   --accent-hover: #2563eb;
   --accent-muted: rgba(59, 130, 246, 0.15);
@@ -13,6 +23,23 @@
   --border-subtle: #252d38;
   --success: #22c55e;
   --error: #ef4444;
+
+  /* Layout: proportional, with higher minimums for small window readability */
+  --title-bar-h: clamp(2rem, 5vh, 3rem);
+  --sidebar-w: clamp(11rem, 18vw, 15rem);
+  --page-pad-x: clamp(1.125rem, 2.5vw, 1.75rem);
+  --page-pad-y: clamp(1.125rem, 2vh, 1.5rem);
+  --page-header-pad-x: clamp(1.125rem, 2.8vw, 1.75rem);
+  --page-header-pad-y: clamp(1rem, 2vh, 1.25rem);
+
+  /* Spacing & radius (rem = scale with root) */
+  --gap-xs: 0.125rem;
+  --gap-sm: 0.25rem;
+  --gap-md: 0.5rem;
+  --gap-lg: 1rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
 }
 
 * {

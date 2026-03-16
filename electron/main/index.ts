@@ -28,10 +28,10 @@ const indexHtml = path.join(RENDERER_DIST, "index.html")
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 960,
-    height: 640,
-    minWidth: 760,
-    minHeight: 520,
+    width: 1000,
+    height: 660,
+    minWidth: 840,
+    minHeight: 560,
     title: "DocKit",
     frame: false,
     backgroundColor: "#0f1419",

@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { PageShell } from "../components/PageShell"
 import type { AppSettings } from "../types/electron"
 
+/** 赞助/捐赠链接，可改为 爱发电、Ko-fi 等 */
+const DONATION_URL = "https://github.com/sponsors/bingqianliu2017"
+
 type SaveState = "idle" | "saving" | "saved" | "error"
 type LibreStatus = "unknown" | "checking" | "found" | "not-found"
 type InstallState = "idle" | "downloading" | "installing" | "done" | "error"
@@ -288,6 +291,22 @@ export function Settings() {
             {saveState === "saved" && "✓ 已保存"}
             {saveState === "error" && "保存失败，请重试"}
             {saveState === "idle" && "保存设置"}
+          </button>
+        </div>
+
+        {/* ── 赞助 / 捐赠 ───────────────────────────────────── */}
+        <div className="settings-about settings-donation">
+          <p className="settings-donation-title">请我喝杯咖啡</p>
+          <p className="settings-donation-desc">
+            如果 DocKit 对你有帮助，欢迎通过赞助支持后续开发与维护。
+          </p>
+          <button
+            type="button"
+            className="btn-donation"
+            onClick={() => window.electronAPI?.openExternal(DONATION_URL)}
+          >
+            <span className="btn-donation-icon">☕</span>
+            赞助开发
           </button>
         </div>
 

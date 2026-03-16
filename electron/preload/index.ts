@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // File system helpers
   openPath: (filePath: string) => ipcRenderer.invoke("open-path", filePath),
+  openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
   showOpenDialog: (options: {
     filters?: { name: string; extensions: string[] }[]
     multiple?: boolean
