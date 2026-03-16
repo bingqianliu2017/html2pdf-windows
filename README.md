@@ -1,4 +1,4 @@
-# html2pdf-windows
+# DocKit
 
 [English](#english) | [中文](#中文)
 
@@ -8,22 +8,31 @@
 
 ### Overview
 
-**html2pdf-windows** is a lightweight desktop application for converting HTML files to high-quality PDF with accurate CSS layout. Simply drag & drop or browse for HTML files, and the app automatically converts them to PDF and saves to your desktop. **Zero dependencies** — no Python, Chrome, or any external tools required.
+**DocKit** is a free, lightweight Windows desktop application for document conversion and image processing. It bundles five tools in one clean interface — all offline, no cloud, no subscription.
 
-[![GitHub](https://img.shields.io/badge/GitHub-bingqianliu2017%2Fhtml2pdf--windows-blue)](https://github.com/bingqianliu2017/html2pdf-windows)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ### Features
 
-- **Drag & Drop** — Drop HTML files directly into the app
-- **Browse** — Or use the file picker to select HTML files
-- **High Quality** — Supports complex layouts (A4, page breaks, remote images, Chinese fonts)
-- **Offline** — Uses Electron’s built-in Chromium engine; no internet required after install
-- **Click to Open** — Open the generated PDF directly after conversion
+| Tool | Input | Output | Engine |
+|------|-------|--------|--------|
+| **HTML → PDF** | `.html` `.htm` | `.pdf` | Chromium `printToPDF` (built-in) |
+| **Word → PDF** | `.docx` `.doc` | `.pdf` | LibreOffice (high fidelity) / mammoth fallback |
+| **PPT → PDF** | `.pptx` `.ppt` | `.pdf` | LibreOffice headless |
+| **PDF Merge** | Multiple `.pdf` | `.pdf` | pdf-lib (pure JS) |
+| **Image Tools** | `.jpg` `.png` `.webp` `.avif` `.gif` `.bmp` `.tiff` | Compressed / converted | Chromium Canvas API (built-in) |
+
+- **Zero cloud** — runs entirely offline
+- **Drag & Drop** — drag files directly from Explorer
+- **Batch processing** — Image Tools and PDF Merge support multiple files
+- **Configurable output directory** — save to any folder (default: Desktop)
+- **LibreOffice auto-detect** — automatically finds your LibreOffice installation
 
 ### Requirements
 
-- **Node.js** 18+ (development only; end users need no runtime)
+- **Node.js** 18+ (development only)
+- **LibreOffice** (optional, free) — required for Word→PDF (high fidelity) and PPT→PDF conversion
+  - Download: https://www.libreoffice.org/download/libreoffice/
 
 ### Quick Start
 
@@ -38,47 +47,51 @@ npm install
 # Run in development mode
 npm run dev
 
-# Build for production (output in release/)
+# Build installer (output in release/)
 npm run build
 ```
-
-### Usage
-
-1. Launch the app
-2. Drag an `.html` or `.htm` file into the drop zone, or click **Browse** to select one
-3. Wait for conversion; PDF is saved to your Desktop with the same base filename
-4. Click **Open** to view the generated PDF
-
-### Tech Stack
-
-| Layer   | Technology                          |
-|---------|-------------------------------------|
-| Desktop | Electron                            |
-| Build   | Vite 6                              |
-| UI      | React 18 + TypeScript               |
-| PDF     | Chromium `printToPDF` (no extra libs)|
 
 ### Project Structure
 
 ```
 html2pdf-windows/
-├── electron/           # Electron main & preload
-│   ├── main/           # Main process (window, IPC, PDF conversion)
-│   └── preload/        # Preload scripts (context bridge)
-├── src/                # React frontend
-│   ├── App.tsx         # Main UI component
-│   └── ...
-├── release/            # Build output (after npm run build)
+├── electron/
+│   ├── main/
+│   │   ├── index.ts            # App entry, window creation, IPC registration
+│   │   ├── ipc/                # IPC handlers (one file per feature)
+│   │   │   ├── window.ts       # Window controls, dialogs, settings
+│   │   │   ├── html2pdf.ts     # HTML → PDF
+│   │   │   ├── doc2pdf.ts      # Word → PDF
+│   │   │   ├── ppt2pdf.ts      # PPT → PDF
+│   │   │   ├── pdfmerge.ts     # PDF merge
+│   │   │   └── imagetools.ts   # Image compress/convert
+│   │   └── utils/
+│   │       ├── settings.ts     # Persist settings to userData/settings.json
+│   │       └── libreoffice.ts  # Detect LibreOffice installation paths
+│   └── preload/
+│       └── index.ts            # contextBridge — exposes electronAPI to renderer
+├── src/
+│   ├── components/             # Shared UI components
+│   ├── pages/                  # One component per tool
+│   ├── hooks/                  # useConvert (progress state management)
+│   └── types/                  # electronAPI TypeScript declarations
+├── public/
+│   └── image-processor.html    # Hidden BrowserWindow for Canvas-based image processing
 └── package.json
 ```
 
-### Development & Contributing
+### Tech Stack
 
-- **Run dev**: `npm run dev`
-- **Build**: `npm run build`
-- **Preview (web)**: `npm run preview`
-
-Contributions are welcome. Feel free to open an Issue or submit a Pull Request.
+| Layer | Technology |
+|-------|------------|
+| Desktop runtime | Electron 35 (Chromium 134) |
+| Build | Vite 6 + vite-plugin-electron |
+| UI | React 18 + TypeScript |
+| HTML → PDF | Chromium `printToPDF` |
+| Word → PDF | LibreOffice headless / mammoth |
+| PPT → PDF | LibreOffice headless |
+| PDF Merge | pdf-lib (pure JS) |
+| Image Tools | Canvas 2D API in hidden BrowserWindow |
 
 ### License
 
@@ -90,19 +103,29 @@ MIT © 2025 [bingqianliu2017](https://github.com/bingqianliu2017)
 
 ### 简介
 
-**html2pdf-windows** 是一款轻量级桌面应用，可将 HTML 文件转换为高质量 PDF，并保持 CSS 布局。拖拽或选择 HTML 文件即可自动转换并保存到桌面。**开箱即用**，无需安装 Python、Chrome 或其他外部工具。
+**DocKit** 是一款免费的轻量级 Windows 桌面工具，提供文档转换和图片处理功能。五大工具集于一体，完全离线运行，无需云服务、无需订阅。
 
-### 功能特点
+### 功能
 
-- **拖拽**：将 HTML 文件直接拖入应用
-- **浏览**：或通过文件选择器选择 HTML 文件
-- **高质量**：支持复杂排版（A4、分页、远程图片、中文字体）
-- **离线**：使用 Electron 内置 Chromium 引擎，安装后无需联网
-- **一键打开**：转换完成后可直接打开生成的 PDF
+| 工具 | 输入格式 | 输出格式 | 引擎 |
+|------|----------|----------|------|
+| **HTML → PDF** | `.html` `.htm` | `.pdf` | Chromium `printToPDF`（内置） |
+| **Word → PDF** | `.docx` `.doc` | `.pdf` | LibreOffice（高还原度）/ mammoth 降级 |
+| **PPT → PDF** | `.pptx` `.ppt` | `.pdf` | LibreOffice headless |
+| **PDF 合并** | 多个 `.pdf` | `.pdf` | pdf-lib（纯 JS） |
+| **图片工具** | `.jpg` `.png` `.webp` `.avif` `.gif` `.bmp` `.tiff` | 压缩 / 转格式 | Chromium Canvas API（内置） |
+
+- **完全离线** — 无需联网
+- **拖拽操作** — 直接从文件资源管理器拖拽文件
+- **批量处理** — 图片工具和 PDF 合并均支持多文件
+- **可配置输出目录** — 保存到任意文件夹（默认桌面）
+- **LibreOffice 自动检测** — 自动探测系统中的 LibreOffice 安装路径
 
 ### 环境要求
 
-- **Node.js** 18+（仅开发需要；终端用户无需安装任何运行时）
+- **Node.js** 18+（仅开发时需要，终端用户无需安装）
+- **LibreOffice**（可选，免费）— Word→PDF 高还原度模式和 PPT→PDF 转换时需要
+  - 下载地址：https://www.libreoffice.org/download/libreoffice/
 
 ### 快速开始
 
@@ -114,50 +137,58 @@ cd html2pdf-windows
 # 安装依赖
 npm install
 
-# 开发模式运行
+# 开发模式运行（直接启动带热更新的 Electron 窗口）
 npm run dev
 
-# 打包发布（输出在 release/ 目录）
+# 打包发布（输出安装包到 release/ 目录）
 npm run build
 ```
 
 ### 使用说明
 
-1. 启动应用
-2. 将 `.html` 或 `.htm` 文件拖入虚线区域，或点击「浏览选择」
-3. 等待转换完成，PDF 将保存到桌面，文件名与 HTML 一致
-4. 点击「点击打开」可查看生成的 PDF
-
-### 技术栈
-
-| 层级   | 技术                            |
-|--------|---------------------------------|
-| 桌面端 | Electron                        |
-| 构建   | Vite 6                          |
-| 界面   | React 18 + TypeScript           |
-| PDF    | Chromium `printToPDF`（无额外库）|
+1. 运行 `npm run dev` 启动开发版，或运行 `npm run build` 打包后安装
+2. 从左侧菜单选择工具
+3. 拖拽文件到对应区域，或点击「浏览选择」
+4. 图片工具：可选择输出格式、质量、最大边长，支持批量处理
+5. PDF 合并：添加多个 PDF，拖拽列表项调整顺序，点击合并
+6. Word / PPT 转换：建议先安装 LibreOffice 以获得最佳还原效果
+7. 前往「设置」可配置输出目录和 LibreOffice 路径
 
 ### 项目结构
 
 ```
 html2pdf-windows/
-├── electron/           # Electron 主进程与预加载
-│   ├── main/           # 主进程（窗口、IPC、PDF 转换）
-│   └── preload/        # 预加载脚本（上下文桥接）
-├── src/                # React 前端
-│   ├── App.tsx         # 主界面组件
-│   └── ...
-├── release/            # 打包输出（npm run build 后）
+├── electron/
+│   ├── main/
+│   │   ├── index.ts            # 应用入口，创建窗口，注册 IPC
+│   │   ├── ipc/                # IPC 处理器（每个功能一个文件）
+│   │   │   ├── window.ts       # 窗口控制、对话框、设置
+│   │   │   ├── html2pdf.ts     # HTML → PDF
+│   │   │   ├── doc2pdf.ts      # Word → PDF
+│   │   │   ├── ppt2pdf.ts      # PPT → PDF
+│   │   │   ├── pdfmerge.ts     # PDF 合并
+│   │   │   └── imagetools.ts   # 图片压缩 / 转换
+│   │   └── utils/
+│   │       ├── settings.ts     # 设置持久化（userData/settings.json）
+│   │       └── libreoffice.ts  # 自动探测 LibreOffice 安装路径
+│   └── preload/
+│       └── index.ts            # 通过 contextBridge 暴露 electronAPI
+├── src/
+│   ├── components/             # 公共 UI 组件
+│   ├── pages/                  # 每个工具对应一个页面组件
+│   ├── hooks/                  # useConvert（统一进度状态管理）
+│   └── types/                  # electronAPI TypeScript 类型声明
+├── public/
+│   └── image-processor.html    # 隐藏 BrowserWindow，Canvas 图片处理核心
 └── package.json
 ```
 
-### 开发与二次开发
+### 开发与贡献
 
-- **开发模式**：`npm run dev`
+- **启动开发模式**：`npm run dev`
 - **打包**：`npm run build`
-- **Web 预览**：`npm run preview`
 
-欢迎参与贡献，可提交 Issue 或 Pull Request。
+欢迎提交 Issue 或 Pull Request。
 
 ### 开源协议
 

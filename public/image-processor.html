@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Image Processor</title>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+/**
+ * Offscreen image processor using Canvas API.
+ * Called via Electron's executeJavaScript() from the main process.
+ * Uses file:// URLs (webSecurity disabled on this hidden window) to load images directly.
+ */
+window.__processImage = async function(params) {
+  const { fileUrl, outputFormat, quality, maxDimension } = params;
+
+  try {
+    const img = new Image();
+    await new Promise(function(resolve, reject) {
+      img.onload = resolve;
+      img.onerror = function() { reject(new Error('无法加载图片: ' + fileUrl)); };
+      img.src = fileUrl;
+    });
+
+    let targetW = img.naturalWidth;
+    let targetH = img.naturalHeight;
+
+    if (maxDimension > 0 && (targetW > maxDimension || targetH > maxDimension)) {
+      if (targetW >= targetH) {
+        targetH = Math.round(targetH * (maxDimension / targetW));
+        targetW = maxDimension;
+      } else {
+        targetW = Math.round(targetW * (maxDimension / targetH));
+        targetH = maxDimension;
+      }
+    }
+
+    const canvas = document.getElementById('c');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+
+    const mimeMap = {
+      'jpeg': 'image/jpeg',
+      'jpg':  'image/jpeg',
+      'png':  'image/png',
+      'webp': 'image/webp',
+      'avif': 'image/avif',
+    };
+    const mime = mimeMap[outputFormat] || 'image/jpeg';
+    const q = (outputFormat === 'png') ? undefined : (quality / 100);
+
+    const dataUrl = canvas.toDataURL(mime, q);
+    const base64 = dataUrl.split(',')[1];
+
+    if (!base64) throw new Error('Canvas 导出失败，可能不支持该输出格式');
+
+    return { success: true, data: base64 };
+  } catch (err) {
+    return { success: false, error: err.message || String(err) };
+  }
+};
+</script>
+</body>
+</html>
