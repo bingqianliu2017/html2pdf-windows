@@ -6,7 +6,11 @@ import { useConvert } from "../hooks/useConvert"
 
 const STEPS = ["正在读取演示文稿…", "正在渲染页面…", "正在保存…"]
 
-export function Ppt2Pdf() {
+interface Ppt2PdfProps {
+  onGoToSettings?: () => void
+}
+
+export function Ppt2Pdf({ onGoToSettings }: Ppt2PdfProps) {
   const { status, progress, progressStep, message, resultPath, run, reset } = useConvert()
   const [libreFound, setLibreFound] = useState<boolean | null>(null)
 
@@ -29,17 +33,24 @@ export function Ppt2Pdf() {
       description="将 PPT / PPTX 演示文稿转换为 PDF，每张幻灯片对应一页"
     >
       {libreFound === false && (
-        <div className="tip tip--error">
+        <div className="tip tip--warn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           <span>
-            <strong>PPT 转换需要 LibreOffice（免费）</strong>，未检测到系统安装。
-            请先
-            <a href="https://www.libreoffice.org" target="_blank" rel="noreferrer" className="tip-link">
-              下载并安装 LibreOffice
-            </a>
-            ，然后前往「设置」配置安装路径。
+            未检测到 LibreOffice，PPT 转换暂不可用。
+            {onGoToSettings ? (
+              <>
+                {" "}
+                <button type="button" className="tip-link tip-link--btn" onClick={onGoToSettings}>
+                  前往「设置」一键安装 LibreOffice（免费）
+                </button>
+                ，安装完成后即可使用。
+              </>
+            ) : (
+              " 请前往「设置」一键安装 LibreOffice。"
+            )}
           </span>
         </div>
       )}

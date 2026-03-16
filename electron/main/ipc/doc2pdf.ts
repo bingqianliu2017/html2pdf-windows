@@ -10,10 +10,22 @@
 import { ipcMain, BrowserWindow } from "electron"
 import path from "node:path"
 import os from "node:os"
-import { existsSync, writeFileSync, unlinkSync } from "node:fs"
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs"
 import { spawn } from "node:child_process"
 import { loadSettings } from "../utils/settings"
 import { detectLibreOffice } from "../utils/libreoffice"
+
+/**
+ * Build file:// URL for LibreOffice UserInstallation.
+ * Using a clean profile avoids user-customized paragraph/line spacing that can increase page count.
+ * If page count still differs from Word, install the same fonts as in the document (font substitution can change line breaks).
+ */
+function libreOfficeProfileUrl(): string {
+  const dir = path.join(os.tmpdir(), "dockit-libre-profile")
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  const absolute = path.resolve(dir)
+  return "file:///" + absolute.replace(/\\/g, "/")
+}
 
 export function registerDoc2PdfIpc(): void {
   ipcMain.handle("convert-doc-to-pdf", async (event, docPath: string) => {
@@ -60,6 +72,7 @@ function convertWithLibreOffice(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     send(0, 20)
+    const profileUrl = libreOfficeProfileUrl()
     const proc = spawn(sofficePath, [
       "--headless",
       "--convert-to",
@@ -67,7 +80,10 @@ function convertWithLibreOffice(
       "--outdir",
       outputDir,
       inputPath,
-    ])
+    ], {
+      env: { ...process.env, UserInstallation: profileUrl },
+      windowsHide: true,
+    })
 
     const progressTimer1 = setTimeout(() => send(1, 50), 1200)
     const progressTimer2 = setTimeout(() => send(1, 80), 3500)
@@ -99,20 +115,34 @@ async function convertDocxWithMammoth(
 
   const result = await mammoth.convertToHtml({ path: docxPath })
 
+  // Layout tuned for 1:1 page match with Word: tight line-height and margins,
+  // @page for print so PDF uses same content area as typical Word A4.
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-  body { font-family: "SimSun", "宋体", serif; max-width: 800px; margin: 40px auto; line-height: 1.8; font-size: 14px; color: #111; }
-  h1,h2,h3,h4,h5,h6 { font-family: "SimHei", "黑体", sans-serif; margin: 1em 0 0.5em; }
-  p { margin: 0.5em 0; }
+  @page { size: A4; margin: 2cm; }
+  body {
+    font-family: "SimSun", "宋体", serif;
+    max-width: 21cm;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+    line-height: 1.35;
+    font-size: 14px;
+    color: #111;
+  }
+  @media print {
+    body { margin: 0; padding: 0; max-width: none; }
+  }
+  h1,h2,h3,h4,h5,h6 { font-family: "SimHei", "黑体", sans-serif; margin: 0.6em 0 0.35em; }
+  p { margin: 0.25em 0; }
   img { max-width: 100%; height: auto; }
-  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-  td, th { border: 1px solid #ccc; padding: 6px 10px; }
+  table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+  td, th { border: 1px solid #ccc; padding: 4px 8px; }
   th { background: #f5f5f5; font-weight: bold; }
-  ul, ol { padding-left: 2em; }
-  blockquote { border-left: 3px solid #ccc; margin-left: 0; padding-left: 1em; color: #555; }
+  ul, ol { padding-left: 1.5em; }
+  blockquote { border-left: 3px solid #ccc; margin-left: 0; padding-left: 0.8em; color: #555; }
 </style>
 </head>
 <body>${result.value}</body>
@@ -132,9 +162,16 @@ async function convertDocxWithMammoth(
     send(1, 75)
     await new Promise((r) => setTimeout(r, 800))
 
+    // Use 2cm margins (20000 microns) to match typical Word; @page in HTML backs this up.
     const pdfData = await printWin.webContents.printToPDF({
       printBackground: false,
-      margins: { marginType: "default" },
+      margins: {
+        marginType: "custom",
+        top: 20000,
+        bottom: 20000,
+        left: 20000,
+        right: 20000,
+      },
       pageSize: "A4",
     })
 

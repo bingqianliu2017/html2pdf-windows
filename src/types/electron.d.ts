@@ -53,6 +53,12 @@ declare global {
       mergePdfs: (filePaths: string[]) => Promise<string>
       getPdfPageCount: (filePath: string) => Promise<number>
 
+      // PDF → Word / HTML / PPT
+      convertPdfToOffice: (
+        pdfPath: string,
+        format: "docx" | "html" | "pptx"
+      ) => Promise<{ success: boolean; outputPath: string; error?: string }>
+
       // Image Tools
       processImages: (tasks: ImageTask[]) => Promise<ImageResult[]>
 

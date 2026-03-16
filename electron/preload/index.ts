@@ -40,6 +40,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getPdfPageCount: (filePath: string) =>
     ipcRenderer.invoke("get-pdf-page-count", filePath),
 
+  // PDF → Word / HTML / PPT
+  convertPdfToOffice: (pdfPath: string, format: "docx" | "html" | "pptx") =>
+    ipcRenderer.invoke("convert-pdf-to-office", pdfPath, format),
+
   // Image Tools
   processImages: (tasks: unknown[]) => ipcRenderer.invoke("process-images", tasks),
 

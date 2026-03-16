@@ -6,7 +6,11 @@ import { useConvert } from "../hooks/useConvert"
 
 const STEPS = ["正在读取文档…", "正在转换…", "正在保存…"]
 
-export function Doc2Pdf() {
+interface Doc2PdfProps {
+  onGoToSettings?: () => void
+}
+
+export function Doc2Pdf({ onGoToSettings }: Doc2PdfProps) {
   const { status, progress, progressStep, message, resultPath, run, reset } = useConvert()
   const [libreFound, setLibreFound] = useState<boolean | null>(null)
 
@@ -35,11 +39,18 @@ export function Doc2Pdf() {
             <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           <span>
-            未检测到 LibreOffice — DOCX 将使用内置引擎转换（还原度有限）；DOC 格式需要 LibreOffice。
-            <a href="https://www.libreoffice.org" target="_blank" rel="noreferrer" className="tip-link">
-              免费下载 LibreOffice
-            </a>
-            ，安装后前往「设置」配置路径可获得最佳还原效果。
+            未检测到 LibreOffice。DOCX 目前可用内置引擎转换（还原度有限），DOC 需安装 LibreOffice。
+            {onGoToSettings ? (
+              <>
+                {" "}
+                <button type="button" className="tip-link tip-link--btn" onClick={onGoToSettings}>
+                  前往「设置」一键安装 LibreOffice（免费）
+                </button>
+                ，即可获得最佳还原效果。
+              </>
+            ) : (
+              " 请前往「设置」一键安装 LibreOffice。"
+            )}
           </span>
         </div>
       )}

@@ -7,10 +7,17 @@
 
 import { ipcMain } from "electron"
 import path from "node:path"
-import { existsSync } from "node:fs"
+import os from "node:os"
+import { existsSync, mkdirSync } from "node:fs"
 import { spawn } from "node:child_process"
 import { loadSettings } from "../utils/settings"
 import { detectLibreOffice } from "../utils/libreoffice"
+
+function libreOfficeProfileUrl(): string {
+  const dir = path.join(os.tmpdir(), "dockit-libre-profile")
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  return "file:///" + path.resolve(dir).replace(/\\/g, "/")
+}
 
 export function registerPpt2PdfIpc(): void {
   ipcMain.handle("convert-ppt-to-pdf", async (event, pptPath: string) => {
@@ -40,7 +47,10 @@ export function registerPpt2PdfIpc(): void {
         "--outdir",
         outputDir,
         pptPath,
-      ])
+      ], {
+        env: { ...process.env, UserInstallation: libreOfficeProfileUrl() },
+        windowsHide: true,
+      })
 
       const t1 = setTimeout(() => send(1, 35), 800)
       const t2 = setTimeout(() => send(1, 65), 2500)

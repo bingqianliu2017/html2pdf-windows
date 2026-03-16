@@ -8,6 +8,7 @@ import { registerPpt2PdfIpc } from "./ipc/ppt2pdf"
 import { registerPdfMergeIpc } from "./ipc/pdfmerge"
 import { registerImageToolsIpc } from "./ipc/imagetools"
 import { registerLibreOfficeInstallerIpc } from "./ipc/libreoffice-installer"
+import { registerPdf2OfficeIpc } from "./ipc/pdf2office"
 
 // Suppress GPU shader disk cache errors (common in VM / RDP / restricted environments)
 app.commandLine.appendSwitch("disable-gpu-shader-disk-cache")
@@ -62,6 +63,7 @@ async function createWindow() {
   registerPdfMergeIpc()
   registerImageToolsIpc(RENDERER_DIST, VITE_DEV_SERVER_URL)
   registerLibreOfficeInstallerIpc()
+  registerPdf2OfficeIpc()
 }
 
 app.whenReady().then(createWindow)
